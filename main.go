@@ -3,13 +3,16 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"html/template"
 	"log"
+	"net/http"
 	"strings"
 
 	_ "github.com/lib/pq"
 
 	myDB "github.com/rainreflect/parser/db"
 	"github.com/rainreflect/parser/domain"
+	"github.com/rainreflect/parser/handler"
 	"github.com/rainreflect/parser/scraper"
 )
 
@@ -34,6 +37,19 @@ func main() {
 	}
 	for _, item := range items {
 		myDB.SaveItemToDB(db, item)
+	}
+
+	tmpl, err := template.ParseFiles("template.html")
+	if err != nil {
+		log.Fatalf("Ошибка загрузки шаблона: %s", err)
+	}
+
+	http.HandleFunc("/articles", handler.ArticlesHandler(items, tmpl))
+
+	// Запуск HTTP-сервера
+	log.Println("Сервер запущен на http://localhost:8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("Ошибка запуска сервера: %s", err)
 	}
 
 }

@@ -36,3 +36,21 @@ func SaveItemToDB(db *sql.DB, item domain.Items) error {
 	log.Printf("Rows affected: %d\n", rowsAffected)
 	return nil
 }
+
+func GetArticles(db *sql.DB) ([]domain.Items, error) {
+	rows, err := db.Query(`SELECT id, title, author, summary, text, url FROM myschema.articles`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var articles []domain.Items
+	for rows.Next() {
+		var item domain.Items
+		if err := rows.Scan(&item.Title, &item.Author, &item.Summary, &item.Text, &item.URL); err != nil {
+			return nil, err
+		}
+		articles = append(articles, item)
+	}
+	return articles, nil
+}
